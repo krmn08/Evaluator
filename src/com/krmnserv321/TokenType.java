@@ -8,5 +8,6 @@ public enum TokenType {
     Number,
     Comma,
     Operator,
+    Prefix,
     End
 }

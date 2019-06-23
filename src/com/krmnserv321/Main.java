@@ -1,12 +1,10 @@
 package com.krmnserv321;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
+import java.util.Arrays;
 import java.util.List;
 
 public class Main {
-    public static void main(String[] args) throws ScriptException {
+    public static void main(String[] args) {
         Environment environment = new Environment();
         environment.addFunction("sqrt", new CalcFunction(1) {
             @Override
@@ -20,29 +18,24 @@ public class Main {
                 return Math.pow(args.get(0), args.get(1));
             }
         });
-        environment.addFunction("sum", new CalcFunction() {
+        CalcFunction sum = new CalcFunction() {
             @Override
             public double applyAsDouble(List<Double> args) {
                 return args.stream().mapToDouble(Double::doubleValue).sum();
             }
-        });
-        environment.addConstant("x", 2);
-        environment.addConstant("y", 8);
-
-        ScriptEngine engine = new ScriptEngineManager().getEngineByName("nashorn");
+        };
+        environment.addFunction("sum", sum);
+        double x = 2;
+        double y = 8;
+        environment.addConstant("x", x);
+        environment.addConstant("y", y);
 
         Evaluator evaluator = new Evaluator(environment);
 
         long t1 = System.currentTimeMillis();
-        System.out.println(engine.eval("Math.pow(2, 8) * Math.sqrt(4) / (1 + 1 + 2) - (1 + 1 + 2)"));
+        System.out.println(evaluator.eval("sqrt(pow(x,y) / sum(-(- 1 * 5 * -1),+1) * -1)-+-+2"));
         System.out.println(System.currentTimeMillis() - t1 + "ms");
 
-        t1 = System.currentTimeMillis();
-        System.out.println(evaluator.eval("pow(x, y) * sqrt(4) / (1 + 1 + 2) - sum(1, 1, 2)"));
-        System.out.println(System.currentTimeMillis() - t1 + "ms");
-
-        t1 = System.currentTimeMillis();
-        System.out.println(Math.pow(2, 8) * Math.sqrt(4) / (1 + 1 + 2) - (1 + 1 + 2));
-        System.out.println(System.currentTimeMillis() - t1 + "ms");
+        System.out.println(Math.sqrt(Math.pow(x, y) / sum.calc(Arrays.asList(-(- 1 * 5 * -1d),+1d)) * -1)-(+-+2));
     }
 }

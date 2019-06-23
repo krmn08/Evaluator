@@ -6,7 +6,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Parser {
+    private static final Token L_PAREN = new Token(TokenType.LeftParen, "(");
+    private static final Token R_PAREN = new Token(TokenType.RightParen, ")");
+
+    private static final Token COMMA = new Token(TokenType.Comma, ",");
+
+    private static final Token PLUS = new Token(TokenType.Operator, "+");
+    private static final Token MINUS = new Token(TokenType.Operator, "-");
+    private static final Token MULTI = new Token(TokenType.Operator, "*");
+    private static final Token DIVIDE = new Token(TokenType.Operator, "/");
+
+    private static final Token POSITIVE = new Token(TokenType.Prefix, "+");
+    private static final Token NEGATIVE = new Token(TokenType.Prefix, "-");
+
     private static final Token END = new Token(TokenType.End, "End");
+
+    private static final Token[] STANDARD_TOKENS = {
+            L_PAREN,
+            R_PAREN,
+            COMMA,
+            PLUS,
+            MINUS,
+            MULTI,
+            DIVIDE,
+            NEGATIVE
+    };
 
     private List<Token> tokenList;
 
@@ -41,8 +65,16 @@ public class Parser {
             //read token from cursor
             loop:
             for (int i = 0; cursor + i < exp.length(); i++) {
+                String sub = exp.substring(cursor, cursor + i + 1);
+                for (Token t : STANDARD_TOKENS) {
+                    if (t.toString().startsWith(sub)) {
+                        if (t.toString().equals(sub)) {
+                            token = t;
+                        }
+                        continue loop;
+                    }
+                }
                 for (Token t : tokenList) {
-                    String sub = exp.substring(cursor, cursor + i + 1);
                     if (t.toString().startsWith(sub)) {
                         if (t.toString().equals(sub)) {
                             token = t;
@@ -51,11 +83,25 @@ public class Parser {
                     }
                 }
                 StringBuilder sb = new StringBuilder();
-                for (int j = 0; cursor + j < exp.length() && (Character.isDigit(exp.charAt(cursor + j)) || exp.charAt(cursor + j) == '.'); j++) {
-                    sb.append(exp.charAt(cursor + j));
+                for (int j = 0; cursor + j < exp.length(); j++) {
+                    char c = exp.charAt(cursor + j);
+                    if (!Character.isDigit(c) && c != '.') {
+                        if (c == '-' || c == '+') {
+                            sb.append(c);
+                        }
+                        break;
+                    }
+                    sb.append(c);
                 }
                 if (sb.length() > 0) {
-                    token = new Token(TokenType.Number, sb.toString());
+                    if (sb.charAt(0) == '-') {
+                        token = parsePrefix(NEGATIVE, MINUS);
+                    } else if (sb.charAt(0) == '+') {
+                        token = parsePrefix(POSITIVE, PLUS);
+                        break;
+                    } else {
+                        token = new Token(TokenType.Number, sb.toString());
+                    }
                 }
                 break;
             }
@@ -67,6 +113,26 @@ public class Parser {
         }
 
         index = 0;
+    }
+
+    private Token parsePrefix(Token prefix, Token operator) {
+        Token token;
+        if (parsedExp.size() == 0) {
+            token = operator;
+            return token;
+        }
+        Token preToken = parsedExp.get(parsedExp.size() - 1);
+        switch (preToken.getType()) {
+            case LeftParen:
+            case Comma:
+            case Operator:
+            case Prefix:
+                token = prefix;
+                break;
+                default:
+                    token = operator;
+        }
+        return token;
     }
 
     public Token peekToken() {

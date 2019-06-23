@@ -5,24 +5,10 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 public class Environment {
-    private static final Token[] STANDARD_TOKENS = {
-            new Token(TokenType.LeftParen, "("),
-            new Token(TokenType.RightParen, ")"),
-            new Token(TokenType.Comma, ","),
-            new Token(TokenType.Operator, "+"),
-            new Token(TokenType.Operator, "-"),
-            new Token(TokenType.Operator, "*"),
-            new Token(TokenType.Operator, "/")
-    };
-
     private Map<String, Double> constantMap = new HashMap<>();
     private Map<String, CalcFunction> functionMap = new HashMap<>();
 
     private List<Token> tokenList = new ArrayList<>();
-
-    public Environment() {
-        this.tokenList.addAll(Arrays.asList(STANDARD_TOKENS));
-    }
 
     public void addConstant(@NotNull String name, double constant) {
         tokenList.add(new Token(TokenType.Constant, name));

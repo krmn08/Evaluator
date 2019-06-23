@@ -30,7 +30,6 @@ public class Evaluator {
     private double eval() {
         double num = term();
         if (peekToken().getType() == TokenType.Comma) {
-            next();
             if (peekToken().getType() == TokenType.RightParen) {
                 throw new EvalException("Unexpected comma");
             }
@@ -39,6 +38,7 @@ public class Evaluator {
 
         while (true) {
             Token token = peekToken();
+
             switch (token.toString()) {
                 case "+":
                     next();
@@ -114,6 +114,20 @@ public class Evaluator {
                 assertToken(TokenType.RightParen);
                 next();
                 break;
+            case Prefix:
+                switch (token.toString()) {
+                    case "-":
+                        next();
+                        factor = -eval();
+                        break;
+                    case "+":
+                        next();
+                        factor = eval();
+                        break;
+                        default:
+                            factor = eval();
+                }
+                break;
                 default:
                     return number();
         }
@@ -150,10 +164,15 @@ public class Evaluator {
             next();
             return args;
         }
-        do {
+        while (true) {
             double arg = eval();
             args.add(arg);
-        } while (peekToken().getType() != TokenType.RightParen);
+            if (peekToken().getType() == TokenType.RightParen) {
+                break;
+            } else {
+                next();
+            }
+        }
 
         next();
 
