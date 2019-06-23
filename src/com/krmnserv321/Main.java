@@ -21,10 +21,11 @@ public class Main {
         CalcFunction sum = new CalcFunction() {
             @Override
             public double applyAsDouble(List<Double> args) {
-                if (args.size() == 0) {
-                    return 0;
+                int sum = 0;
+                for (Double arg : args) {
+                    sum += arg;
                 }
-                return args.stream().reduce((s, v) -> s += v).get();
+                return sum;
             }
         };
         environment.addFunction("sum", sum);
