@@ -28,8 +28,7 @@ public class Parser {
             PLUS,
             MINUS,
             MULTI,
-            DIVIDE,
-            NEGATIVE
+            DIVIDE
     };
 
     private List<Token> tokenList;
