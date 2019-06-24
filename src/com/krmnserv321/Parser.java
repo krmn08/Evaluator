@@ -46,11 +46,12 @@ public class Parser {
     }
 
     public void parse(@NotNull String exp) {
-        this.exp = exp.trim();
+        this.exp = exp = exp.trim();
         parsedExp.clear();
 
-        Token token = null;
+        Token token;
         for (int cursor = 0;; cursor += token.length()) {
+            token = null;
             if (cursor >= exp.length()) {
                 parsedExp.add(END);
                 break;
@@ -81,28 +82,30 @@ public class Parser {
                         continue loop;
                     }
                 }
-                StringBuilder sb = new StringBuilder();
-                for (int j = 0; cursor + j < exp.length(); j++) {
-                    char c = exp.charAt(cursor + j);
-                    if (!Character.isDigit(c) && c != '.') {
-                        if (c == '-' || c == '+') {
-                            sb.append(c);
-                        }
-                        break;
-                    }
-                    sb.append(c);
-                }
-                if (sb.length() > 0) {
-                    if (sb.charAt(0) == '-') {
-                        token = parsePrefix(NEGATIVE, MINUS);
-                    } else if (sb.charAt(0) == '+') {
-                        token = parsePrefix(POSITIVE, PLUS);
-                        break;
-                    } else {
-                        token = new Token(TokenType.Number, sb.toString());
-                    }
-                }
                 break;
+            }
+
+            boolean numState = false;
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; cursor + i < exp.length(); i++) {
+                char c = exp.charAt(cursor + i);
+                if (!Character.isDigit(c) && c != '.') {
+                    if (!numState && (c == '-' || c == '+')) {
+                        sb.append(c);
+                    }
+                    break;
+                }
+                numState = true;
+                sb.append(c);
+            }
+            if (sb.length() > 0) {
+                if (sb.toString().equals("-")) {
+                    token = parsePrefix(NEGATIVE, MINUS);
+                } else if (sb.toString().equals("+")) {
+                    token = parsePrefix(POSITIVE, PLUS);
+                } else {
+                    token = new Token(TokenType.Number, sb.toString());
+                }
             }
             if (token == null) {
                 throw new TokenParseException("Doesn't match any tokens: " + exp.charAt(cursor), cursor);
@@ -117,7 +120,7 @@ public class Parser {
     private Token parsePrefix(Token prefix, Token operator) {
         Token token;
         if (parsedExp.size() == 0) {
-            token = operator;
+            token = prefix;
             return token;
         }
         Token preToken = parsedExp.get(parsedExp.size() - 1);

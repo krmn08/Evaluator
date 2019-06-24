@@ -29,17 +29,17 @@ public class Main {
             }
         };
         environment.addFunction("sum", sum);
-        double x = 2;
-        double y = 8;
+        double x = 3;
+        double y = 4;
         environment.addConstant("x", x);
         environment.addConstant("y", y);
 
         Evaluator evaluator = new Evaluator(environment);
 
         long t1 = System.currentTimeMillis();
-        System.out.println(evaluator.eval("sqrt(pow(x,y) / sum(-(- 1 * 5 * -1),+1) * -1)-+-+2"));
+        System.out.println(evaluator.eval("sqrt(pow(x, y) / sum(-(- 1 * 10 * -1)x / x, +(2xy / x / y / 2)) * -1)-+-+2xy"));
         System.out.println(System.currentTimeMillis() - t1 + "ms");
 
-        System.out.println(Math.sqrt(Math.pow(x, y) / sum.calc(Arrays.asList(-(- 1 * 5 * -1d),+1d)) * -1)-(+-+2));
+        System.out.println(Math.sqrt(Math.pow(x, y) / sum.calc(Arrays.asList(-(- 1 * 10 * -1d),+1d)) * -1)-+-+2*x*y);
     }
 }

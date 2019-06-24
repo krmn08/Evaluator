@@ -29,15 +29,17 @@ public class Evaluator {
 
     private double eval() {
         double num = term();
-        if (peekToken().getType() == TokenType.Comma) {
-            if (peekToken().getType() == TokenType.RightParen) {
+        Token token = peekToken();
+        if (token.getType() == TokenType.Comma) {
+            next();
+            if (token.getType() == TokenType.RightParen) {
                 throw new EvalException("Unexpected comma");
             }
             return num;
         }
 
         while (true) {
-            Token token = peekToken();
+            token = peekToken();
 
             switch (token.toString()) {
                 case "+":
@@ -74,20 +76,28 @@ public class Evaluator {
     }
 
     private double term() {
-        double num = factor();
+        double num = omittedTerm();
         while (true) {
             Token token = peekToken();
             switch (token.toString()) {
                 case "*":
                     next();
-                    num *= factor();
+                    num *= omittedTerm();
                     continue;
                 case "/":
                     next();
-                    num /= factor();
+                    num /= omittedTerm();
                     continue;
             }
             break;
+        }
+        return num;
+    }
+
+    private double omittedTerm() {
+        double num = factor();
+        for (Token token = peekToken(); token.getType() == TokenType.Constant; token = peekToken()) {
+            num *= constant();
         }
         return num;
     }
@@ -98,12 +108,7 @@ public class Evaluator {
         double factor;
         switch (token.getType()) {
             case Constant:
-                Double constant = environment.getConstantMap().get(token.toString());
-                if (constant == null) {
-                    throw new EvalException("Constant not found: " + token);
-                }
-                factor = constant;
-                next();
+                factor = constant();
                 break;
             case Function:
                 factor = function();
@@ -115,17 +120,12 @@ public class Evaluator {
                 next();
                 break;
             case Prefix:
-                switch (token.toString()) {
-                    case "-":
-                        next();
-                        factor = -eval();
-                        break;
-                    case "+":
-                        next();
-                        factor = eval();
-                        break;
-                        default:
-                            factor = eval();
+                if (token.toString().equals("-")) {
+                    next();
+                    factor = -factor();
+                } else {
+                    next();
+                    factor = factor();
                 }
                 break;
                 default:
@@ -140,6 +140,16 @@ public class Evaluator {
         assertToken(TokenType.Number);
         next();
         return Double.parseDouble(token.toString());
+    }
+
+    private double constant() {
+        Token token = peekToken();
+        Double constant = environment.getConstantMap().get(token.toString());
+        if (constant == null) {
+            throw new EvalException("Constant not found: " + token);
+        }
+        next();
+        return constant;
     }
 
     private double function() {
@@ -164,15 +174,10 @@ public class Evaluator {
             next();
             return args;
         }
-        while (true) {
+        do {
             double arg = eval();
             args.add(arg);
-            if (peekToken().getType() == TokenType.RightParen) {
-                break;
-            } else {
-                next();
-            }
-        }
+        } while (peekToken().getType() != TokenType.RightParen);
 
         next();
 
